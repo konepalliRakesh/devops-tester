@@ -1,0 +1,242 @@
+How to setup SonaType Nexus3 on Ubuntu:
+
+Java 8 installation
+sudo apt update && sudo apt install openjdk-8-jre-headless -y
+
+Note: Nexus is not compatible with Java 11 in Ubuntu 18.0.4. So we need to install Java 8.
+java -version
+
+
+Execute the below commands -  navigate to /opt directory by changing directory:
+cd /opt
+
+Download Nexus
+sudo wget https://download.sonatype.com/nexus/3/nexus-3.22.0-02-unix.tar.gz
+
+Extract Nexus files
+
+sudo tar -xvf nexus-3.22.0-02-unix.tar.gz
+sudo mv nexus-3.22.0-02 nexus
+
+Create a user called Nexus
+sudo adduser nexus
+
+give some password may be as admin, but do remember.
+Keep entering enter for all other values and press y to confirm the entries.
+
+Give permission to Nexus user
+
+sudo chown -R nexus:nexus /opt/nexus
+sudo chown -R nexus:nexus /opt/sonatype-work
+
+sudo vi /opt/nexus/bin/nexus.rc
+change run_as_user="nexus"
+ 
+
+
+
+Modify memory settings
+sudo vi /opt/nexus/bin/nexus.vmoptions
+
+
+Add all the below changes the file with below yellow highlighted entry:
+-Xms512M
+-Xmx512M
+-XX:MaxDirectMemorySize=512m
+
+Configure Nexus to run as a service
+sudo vi /etc/systemd/system/nexus.service
+Copy the below content highlighted in green color.
+
+[Unit]
+Description=nexus service
+After=network.target
+
+[Service]
+Type=forking
+LimitNOFILE=65536
+User=nexus
+Group=nexus
+ExecStart=/opt/nexus/bin/nexus start
+ExecStop=/opt/nexus/bin/nexus stop
+User=nexus
+Restart=on-abort 
+[Install]
+WantedBy=multi-user.target
+
+Now Start Nexus
+sudo systemctl enable nexus
+sudo systemctl start nexus 
+sudo systemctl status nexus
+
+
+if it says stopped, review the steps above and you can troubleshoot by looking into Nexus logs by executing below command:
+tail -f /opt/sonatype-work/nexus3/log/nexus.log
+
+
+Press control C to come out of the above window.
+It should say Started Sonatype Nexus OSS 3.22.0-02.  If you Nexus stopped, review the steps above.
+
+Once Nexus is successfully installed, you can access it in the browser by 
+URL - http://public_dns_name:8081
+
+
+
+Now click on Sign in, enter admin as user name and password by executing below cat command.
+
+
+
+cat /opt/sonatype-work/nexus3/admin.password
+Now change admin password as admin123
+
+
+
+
+enable anonymous access
+
+
+Click Finish.
+Sign in with user name/password is admin/admin123
+you should see the home page of Nexus.
+
+Please follow steps for integrating Nexus with Jenkins
+http://www.cidevops.com/2018/06/jenkins-nexus-integration-how-to.html
+at April 13, 2020 
+Email This
+BlogThis!
+Share to Twitter
+Share to Facebook
+Share to Pinterest
+Labels: CICD, Nexus 3, Ubuntu 18.0.4
+3 comments:
+
+UnknownApril 19, 2020 at 5:23 PM
+Coach, the Nexus stops because Nexus was not configured to run as a service. Should include:
+Configure Nexus to run as a service
+
+sudo vi /etc/systemd/system/nexus.service
+Copy the below content highlighted in green color.
+
+[Unit]
+Description=nexus service
+After=network.target
+
+[Service]
+Type=forking
+LimitNOFILE=65536
+User=nexus
+Group=nexus
+ExecStart=/opt/nexus/bin/nexus start
+ExecStop=/opt/nexus/bin/nexus stop
+User=nexus
+Restart=on-abort
+[Install]
+WantedBy=multi-user.target
+
+Reply
+Replies
+
+DevOps CoachMay 31, 2020 at 3:01 PM
+yes, we should. Let me add that in here, thanks for letting me know.
+
+Reply
+
+AnonymousAugust 20, 2021 at 12:07 AM
+Thanks it works
+
+Reply
+
+Newer PostOlder PostHome
+Subscribe to: Post Comments (Atom)
+Create Azure Pipeline using YAML | Create Azure YAML Pipeline | Build Pipelines in Azure DevOps to Deploy into Azure Cloud | How to Deploy Java WebApp into Azure Web App in Azure Cloud
+Building pipelines in Azure DevOps is really easy, you can migrate your web applications from any where into Azure Cloud by using Azure pipe...
+
+
+
+Install Jenkins on Ubuntu 18.0.4 | Setup Jenkins on AWS EC2 Ubuntu instance | How to setup Jenkins in Ubuntu EC2 instance?
+Please follow the steps to install Java, Jenkins, Maven on Ubuntu 18.0.4 instance. Jenkins, Maven are Java based applications, so we need ...
+
+Create Freestyle job in Jenkins | How to create build job in Jenkins to automate Java build and deployment of WAR into Tomcat
+Jenkins is popular open source Continuous integration tool. It was written entirely in Java. Jenkins is a self-contained automation server ...
+
+How to Integrate SonarQube with Jenkins | Jenkins SonarQube Integration
+Here below are the steps for integrating  SonarQube  with Jenkins: Pre-requisites: Make sure  SonarQube  is up and running Make sure S...
+Subscribe to My YouTube Channel
+
+Search This Blog
+Labels
+AKS (8) Ansible (14) Artifactory (5) AWS (16) Azure (19) Azure DevOps (12) BitBucket (7) CICD (15) Code Quality (9) Containers (3) DevOps (12) DevOps Coaching (11) DevOps Interview Questions (5) DevOps Interview Tips (6) Docker (30) EKS (5) Git (15) GitHub (9) Helm (2) IAC (32) Infrastructure (9) Jenkins (59) K8S (3) Kubernetes (22) MacOS (3) Maven (5) Microservices (2) Nexus (11) Nexus 3 (5) Pipelines (14) Puppet (8) Puppet Master (3) Red Hat (4) SCM (5) Slack (4) Sonarqube (14) Teamcity (4) Terraform (22) Tomcat (4) Ubuntu (22) Ubuntu 18.0.4 (17) VSTS (5) Webhooks (4)
+Popular Posts
+
+Create Freestyle job in Jenkins | How to create build job in Jenkins to automate Java build and deployment of WAR into Tomcat
+Jenkins is popular open source Continuous integration tool. It was written entirely in Java. Jenkins is a self-contained automation server ...
+
+Install Jenkins on Ubuntu 18.0.4 | Setup Jenkins on AWS EC2 Ubuntu instance | How to setup Jenkins in Ubuntu EC2 instance?
+Please follow the steps to install Java, Jenkins, Maven on Ubuntu 18.0.4 instance. Jenkins, Maven are Java based applications, so we need ...
+
+Pre-requisites before starting the DevOps Coaching
+Please Watch the video first before you get started: 1. Create an account in https://aws.amazon.com . Set that as basic free tier account...
+
+Jenkins setup - Install Java, Jenkins, Maven, Tomcat on Ubuntu EC2 - How to install Java, Jenkins, Maven, Tomcat on Ubuntu EC2
+Please follow steps to install Java, Jenkins, Maven, Tomcat on Ubuntu EC2. Jenkins is a java based application, so you need to install Jav...
+
+How to setup SSH keys | How to setup Repo in GitHub and Setup Java Project in GitHub | How to add a Java Web App in GitHub using Maven
+GitHub is one of the popular git-based version control systems. GitHub is very good example for Software-as-a-service, ...
+
+How to Integrate SonarQube with Jenkins | Jenkins SonarQube Integration
+Here below are the steps for integrating  SonarQube  with Jenkins: Pre-requisites: Make sure  SonarQube  is up and running Make sure S...
+Welcome To DevOps Coaching - Coaching Pre-requistes and some Agile and DevOps concepts basics links
+Welcome to DevOps Coaching Program! Thanks for showing interest in joining the program. Please go through the useful links before joining t...
+
+ 
+Blog Archive
+►  2022 (12)
+►  2021 (54)
+▼  2020 (84)
+►  December (2)
+►  November (15)
+►  October (11)
+►  September (5)
+►  August (6)
+►  July (3)
+►  June (5)
+►  May (8)
+▼  April (19)
+How to add existing files into GitHub using comman...
+Provision Ubuntu 18.0.4 EC2 Instance | How to crea...
+Provision EC2 instance using Puppet on AWS - Puppe...
+How to configure Puppet Master and integrate with ...
+Puppet Install LAMP stack on Ubuntu | How to insta...
+Install Java 11 using Puppet on Agent - Create Pup...
+Install Ansible on Ubuntu | How to setup Ansible o...
+Jenkins pipeline code to upload artifacts to Artif...
+Integrate Artifactory with Jenkins - Upload Artifa...
+Install Artifactory on Ubuntu | Setup Artifactory ...
+How to integrate SonarQube in Azure DevOps - Setup...
+How to Integrate SonarQube with Jenkins | Jenkins ...
+Install SonaType Nexus 3 on Ubuntu 18.0.4 - How to...
+Install Tomcat 9 on Ubuntu 18.0.4 | Setup Tomcat 9...
+Install Sonarqube on Ubuntu - How to install Sonar...
+Install Jenkins on Ubuntu 18.0.4 | Setup Jenkins o...
+Terraform windows Download | Install Terraform on ...
+Trigger Jenkins Job from Slack - How to Trigger Je...
+How to install Terraform on Mac OS - TerraForm In...
+►  March (4)
+►  February (4)
+►  January (2)
+►  2019 (51)
+►  2018 (13)
+About Me
+DevOps Coach
+View my complete profile
+
+ 
+Followers
+
+Clustrmaps
+26,243 Pageviews
+Mar. 27th - Apr. 27th
+
+ 
+
+ 
